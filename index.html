@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DIGITAL SOLUTIONS | Gestión</title>
+<meta name="theme-color" content="#ffffff">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--ink:#17263c;--muted:#718096;--line:#e7edf4;--blue:#1769aa;--bg:#f5f7fb;--green:#15966b;--red:#c44747}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--ink)}
+button,input,select,textarea{font:inherit}button{cursor:pointer}.hidden{display:none!important}
+.auth{min-height:100vh;display:grid;place-items:center;padding:20px;background:linear-gradient(135deg,#f5f8fc,#eaf1f9)}
+.auth-card{background:#fff;width:min(430px,100%);padding:30px;border:1px solid var(--line);border-radius:20px;box-shadow:0 18px 55px #203b5b12}
+.logo{width:46px;height:46px;border-radius:13px;background:#e8f2fb;color:var(--blue);display:grid;place-items:center;font-size:23px;font-weight:800}
+h1{font-size:22px;margin:14px 0 4px}.sub{color:var(--muted);font-size:13px;margin:0 0 22px}
+label{font-size:12px;font-weight:650;color:#526176;display:block;margin:12px 0 6px}
+input,select,textarea{width:100%;padding:11px 12px;border:1px solid #dce4ee;border-radius:9px;background:#fff;color:var(--ink);outline:none}
+input:focus,select:focus,textarea:focus{border-color:#77a9d6;box-shadow:0 0 0 3px #1769aa12}
+.btn{border:0;border-radius:9px;padding:11px 15px;background:var(--blue);color:white;font-weight:650}.btn:disabled{opacity:.55;cursor:not-allowed}
+.btn.light{background:#eef4fa;color:#245579}.btn.ghost{background:#fff;color:#42536a;border:1px solid var(--line)}.btn.danger{background:#fff0f0;color:var(--red)}
+.full{width:100%;margin-top:16px}.auth-switch{margin-top:16px;text-align:center;color:var(--muted);font-size:13px}.link{color:var(--blue);font-weight:650;cursor:pointer}
+.app{min-height:100vh}.top{height:68px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 25px;position:sticky;top:0;z-index:4}
+.brand{display:flex;align-items:center;gap:11px;font-weight:800;letter-spacing:.2px}.brand .logo{width:38px;height:38px;font-size:19px}
+.userbar{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:13px}
+.layout{display:grid;grid-template-columns:225px 1fr;max-width:1500px;margin:auto;min-height:calc(100vh - 68px)}
+aside{padding:22px 14px;border-right:1px solid var(--line);background:#fff}
+.nav-title{font-size:10px;color:#9aa7b7;font-weight:800;letter-spacing:1.1px;padding:8px 12px}
+.nav{width:100%;display:flex;gap:11px;align-items:center;text-align:left;padding:11px 12px;border:0;background:transparent;color:#64748b;border-radius:9px;margin:2px 0;font-weight:600;font-size:13px}
+.nav.active,.nav:hover{background:#edf5fc;color:var(--blue)}.nav span:first-child{width:20px;text-align:center;font-size:16px}
+main{padding:28px;min-width:0}.page-head{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:22px}
+h2{margin:0;font-size:23px}.muted{color:var(--muted);font-size:13px;margin-top:5px}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:22px}
+.stat,.panel{background:#fff;border:1px solid var(--line);border-radius:13px;padding:17px}
+.stat-top{display:flex;justify-content:space-between;color:var(--muted);font-size:12px}.stat strong{display:block;font-size:26px;margin-top:12px}.stat small{color:var(--muted)}
+.panel{margin-bottom:18px}.panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.panel h3{margin:0;font-size:15px}
+.toolbar{display:flex;gap:9px;align-items:center;margin-bottom:13px}.toolbar input{max-width:320px}
+.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;white-space:nowrap;font-size:13px}th{text-align:left;color:#8592a3;font-size:11px;font-weight:700;padding:11px;border-bottom:1px solid var(--line)}td{padding:13px 11px;border-bottom:1px solid #eff2f6}tr:last-child td{border-bottom:0}
+.pill{display:inline-block;padding:5px 8px;border-radius:30px;background:#edf4fb;color:#426887;font-size:11px;font-weight:700}
+.empty{text-align:center;color:var(--muted);padding:30px 10px;font-size:13px}
+.modal-back{position:fixed;inset:0;background:#14223866;display:grid;place-items:center;padding:16px;z-index:10}
+.modal{background:#fff;border-radius:15px;padding:22px;width:min(560px,100%);max-height:90vh;overflow:auto;box-shadow:0 20px 70px #10243a33}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.modal-head h3{margin:0}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}.span2{grid-column:span 2}
+.notice{padding:11px 13px;border-radius:9px;font-size:12px;margin-top:12px;background:#fff7e6;color:#8b641e}
+.toast{position:fixed;right:18px;bottom:18px;background:#17324f;color:white;padding:12px 16px;border-radius:10px;z-index:20;font-size:13px;box-shadow:0 8px 25px #0002}
+.mobile-menu{display:none}
+@media(max-width:850px){.layout{grid-template-columns:1fr}aside{display:flex;overflow:auto;gap:5px;padding:9px;border-right:0;border-bottom:1px solid var(--line);position:sticky;top:68px;z-index:3}.nav-title{display:none}.nav{white-space:nowrap;width:auto;padding:9px 11px}.stats{grid-template-columns:repeat(2,1fr)}main{padding:20px 14px}}
+@media(max-width:520px){.top{padding:0 13px}.userbar #emailLabel{display:none}.stats{gap:9px}.stat{padding:13px}.stat strong{font-size:22px}.page-head{align-items:flex-start;flex-direction:column}.form-grid{grid-template-columns:1fr}.span2{grid-column:auto}.toolbar{flex-wrap:wrap}.toolbar input{max-width:none;flex:1}}
+</style>
+</head>
+<body>
+<section id="authView" class="auth">
+ <div class="auth-card">
+  <div class="logo">DS</div><h1>DIGITAL SOLUTIONS</h1><p class="sub">Gestión profesional de reparaciones electrónicas</p>
+  <div id="authTitle" style="font-weight:700">Iniciar sesión</div>
+  <form id="authForm">
+   <label>Correo electrónico</label><input id="authEmail" type="email" required autocomplete="email" placeholder="tu@correo.com">
+   <label>Contraseña</label><input id="authPassword" type="password" required minlength="6" autocomplete="current-password" placeholder="Mínimo 6 caracteres">
+   <button class="btn full" id="authSubmit">Entrar al sistema</button>
+  </form>
+  <div class="auth-switch"><span id="authPrompt">¿No tienes cuenta?</span> <span class="link" id="authToggle">Crear cuenta</span></div>
+  <div class="notice">Tu información se guarda en tu proyecto privado de Supabase. Regístrate con tu correo para comenzar.</div>
+  <p id="authError" style="color:#b33;font-size:12px"></p>
+ </div>
+</section>
+<section id="appView" class="app hidden">
+ <header class="top">
+  <div class="brand"><div class="logo">DS</div><div>DIGITAL SOLUTIONS<div style="font-size:10px;color:#8b98a8;font-weight:500">GESTIÓN DE SERVICIO TÉCNICO</div></div></div>
+  <div class="userbar"><span id="emailLabel"></span><button class="btn ghost" id="logoutBtn">Salir</button></div>
+ </header>
+ <div class="layout">
+  <aside>
+   <div class="nav-title">MENÚ PRINCIPAL</div>
+   <button class="nav active" data-page="dashboard"><span>▦</span>Panel principal</button>
+   <button class="nav" data-page="clients"><span>♙</span>Clientes</button>
+   <button class="nav" data-page="repairs"><span>⌁</span>Reparaciones</button>
+   <button class="nav" data-page="inventory"><span>▤</span>Inventario</button>
+   <button class="nav" data-page="payments"><span>$</span>Pagos</button>
+   <button class="nav" data-page="technicians"><span>⚙</span>Técnicos</button>
+  </aside>
+  <main id="mainContent"></main>
+ </div>
+</section>
+<div id="modalRoot"></div><div id="toast" class="toast hidden"></div>
+<script>
+const SUPABASE_URL = "https://wyvjrkqcnlqwasxwnfen.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_NeZ9lZSPvZ7mKbJ9o6KuDA_5B13Yw66";
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+let currentUser=null, page="dashboard", authMode="login";
+let cache={clients:[],repairs:[],inventory:[],payments:[],technicians:[]};
+const $=id=>document.getElementById(id);
+const money=n=>"$"+Number(n||0).toFixed(2);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function toast(msg){$("toast").textContent=msg;$("toast").classList.remove("hidden");setTimeout(()=>$("toast").classList.add("hidden"),3000)}
+function showError(e){toast(e?.message||"Ocurrió un error")}
+function setAuthMode(mode){authMode=mode;$("authTitle").textContent=mode==="login"?"Iniciar sesión":"Crear cuenta";$("authSubmit").textContent=mode==="login"?"Entrar al sistema":"Crear mi cuenta";$("authPrompt").textContent=mode==="login"?"¿No tienes cuenta?":"¿Ya tienes cuenta?";$("authToggle").textContent=mode==="login"?"Crear cuenta":"Iniciar sesión";$("authPassword").autocomplete=mode==="login"?"current-password":"new-password";$("authError").textContent=""}
+$("authToggle").onclick=()=>setAuthMode(authMode==="login"?"signup":"login");
+$("authForm").onsubmit=async e=>{e.preventDefault();$("authSubmit").disabled=true;$("authError").textContent="";try{const email=$("authEmail").value,password=$("authPassword").value;let r=authMode==="login"?await db.auth.signInWithPassword({email,password}):await db.auth.signUp({email,password});if(r.error)throw r.error;if(authMode==="signup"&&!r.data.session){$("authError").textContent="Cuenta creada. Revisa tu correo para confirmar el registro y luego inicia sesión."}else{toast("Bienvenido a DIGITAL SOLUTIONS")}}catch(err){$("authError").textContent=err.message}finally{$("authSubmit").disabled=false}};
+$("logoutBtn").onclick=async()=>{await db.auth.signOut()};
+db.auth.onAuthStateChange((_event,session)=>{currentUser=session?.user||null;renderAuth();if(currentUser)loadData()});
+function renderAuth(){$("authView").classList.toggle("hidden",!!currentUser);$("appView").classList.toggle("hidden",!currentUser);$("emailLabel").textContent=currentUser?.email||""}
+async function loadData(){const tables=["clients","repair_orders","inventory","payments","technicians"];const results=await Promise.all(tables.map(t=>db.from(t).select("*").order(t==="payments"?"paid_at":"created_at",{ascending:false}).limit(500)));for(let i=0;i<tables.length;i++){if(results[i].error){showError(results[i].error);return}cache[{clients:"clients",repair_orders:"repairs",inventory:"inventory",payments:"payments",technicians:"technicians"}[tables[i]]]=results[i].data||[]}renderPage()}
+$("logoutBtn").onclick=async()=>{const {error}=await db.auth.signOut();if(error)showError(error)};
+document.querySelectorAll(".nav").forEach(b=>b.onclick=()=>{page=b.dataset.page;document.querySelectorAll(".nav").forEach(x=>x.classList.toggle("active",x===b));renderPage()});
+function heading(title,desc,action=""){return `<div class="page-head"><div><h2>${title}</h2><div class="muted">${desc}</div></div>${action}</div>`}
+function renderPage(){if(!currentUser)return;const m=$("mainContent");if(page==="dashboard"){const paid=cache.payments.reduce((s,p)=>s+Number(p.amount),0);m.innerHTML=heading("Panel principal","Resumen general de tu negocio")+`<div class="stats">
+<div class="stat"><div class="stat-top">Clientes <span>♙</span></div><strong>${cache.clients.length}</strong><small>Registrados</small></div>
+<div class="stat"><div class="stat-top">Reparaciones <span>⌁</span></div><strong>${cache.repairs.length}</strong><small>Órdenes totales</small></div>
+<div class="stat"><div class="stat-top">Pendientes <span>◷</span></div><strong>${cache.repairs.filter(r=>!["delivered","cancelled"].includes(r.status)).length}</strong><small>Por completar</small></div>
+<div class="stat"><div class="stat-top">Ingresos registrados <span>$</span></div><strong>${money(paid)}</strong><small>Pagos recibidos</small></div></div>
+<div class="panel"><div class="panel-head"><h3>Reparaciones recientes</h3><button class="btn light" onclick="go('repairs')">Ver todas</button></div>${repairTable(cache.repairs.slice(0,6))}</div>
+<div class="panel"><div class="panel-head"><h3>Accesos rápidos</h3></div><div style="display:flex;gap:9px;flex-wrap:wrap"><button class="btn" onclick="openForm('client')">＋ Nuevo cliente</button><button class="btn light" onclick="openForm('repair')">＋ Nueva reparación</button><button class="btn light" onclick="go('inventory')">Ver inventario</button></div></div>`}
+if(page==="clients")m.innerHTML=heading("Clientes","Administra la información de tus clientes",`<button class="btn" onclick="openForm('client')">＋ Nuevo cliente</button>`)+`<div class="panel"><div class="toolbar"><input id="searchBox" placeholder="Buscar por nombre o teléfono..." oninput="filterTable('clientTable',this.value)"></div><div id="clientTable">${clientTable(cache.clients)}</div></div>`;
+if(page==="repairs")m.innerHTML=heading("Reparaciones","Controla las órdenes y el estado de cada equipo",`<button class="btn" onclick="openForm('repair')">＋ Nueva orden</button>`)+`<div class="panel"><div class="toolbar"><input placeholder="Buscar orden, cliente o equipo..." oninput="filterTable('repairTableWrap',this.value)"></div><div id="repairTableWrap">${repairTable(cache.repairs)}</div></div>`;
+if(page==="inventory")m.innerHTML=heading("Inventario","Control de repuestos y existencias",`<button class="btn" onclick="openForm('inventory')">＋ Agregar producto</button>`)+`<div class="panel"><div class="toolbar"><input placeholder="Buscar producto..." oninput="filterTable('inventoryTable',this.value)"></div><div id="inventoryTable">${inventoryTable(cache.inventory)}</div></div>`;
+if(page==="payments")m.innerHTML=heading("Pagos","Registra abonos y consulta los ingresos",`<button class="btn" onclick="openForm('payment')">＋ Registrar pago</button>`)+`<div class="panel"><h3 style="margin-bottom:12px">Total recibido: ${money(cache.payments.reduce((s,p)=>s+Number(p.amount),0))}</h3>${paymentTable(cache.payments)}</div>`;
+if(page==="technicians")m.innerHTML=heading("Técnicos","Administra el equipo de trabajo",`<button class="btn" onclick="openForm('technician')">＋ Nuevo técnico</button>`)+`<div class="panel">${technicianTable(cache.technicians)}</div>`}
+function go(p){page=p;document.querySelectorAll(".nav").forEach(x=>x.classList.toggle("active",x.dataset.page===p));renderPage()}
+function clientName(id){return cache.clients.find(c=>c.id===id)?.full_name||"Cliente"}
+function repairTable(rows){if(!rows.length)return `<div class="empty">Todavía no hay reparaciones registradas.</div>`;return `<div class="table-wrap"><table><thead><tr><th>Equipo</th><th>Cliente</th><th>Estado</th><th>Total</th><th>Fecha</th><th></th></tr></thead><tbody>${rows.map(r=>`<tr><td><b>${esc([r.brand,r.model].filter(Boolean).join(" ")||r.device_type)}</b><div class="muted">${esc(r.device_type)}</div></td><td>${esc(clientName(r.client_id))}</td><td><select style="width:auto;padding:6px" onchange="changeStatus('${r.id}',this.value)">${["pending","diagnosed","waiting_parts","in_repair","ready","delivered","cancelled"].map(s=>`<option value="${s}" ${r.status===s?"selected":""}>${statusLabel(s)}</option>`).join("")}</select></td><td>${money(r.final_cost||r.estimated_cost)}</td><td>${new Date(r.received_at||r.created_at).toLocaleDateString("es-SV")}</td><td><button class="btn ghost" onclick="openForm('payment','${r.id}')">Pago</button></td></tr>`).join("")}</tbody></table></div>`}
+function statusLabel(s){return ({pending:"Pendiente",diagnosed:"Diagnosticado",waiting_parts:"Espera repuesto",in_repair:"En reparación",ready:"Listo",delivered:"Entregado",cancelled:"Cancelado"})[s]||s}
+function clientTable(rows){if(!rows.length)return `<div class="empty">No hay clientes registrados.</div>`;return `<div class="table-wrap"><table><thead><tr><th>Nombre</th><th>Teléfono</th><th>Correo</th><th>Registrado</th></tr></thead><tbody>${rows.map(c=>`<tr><td><b>${esc(c.full_name)}</b></td><td>${esc(c.phone)}</td><td>${esc(c.email||"—")}</td><td>${new Date(c.created_at).toLocaleDateString("es-SV")}</td></tr>`).join("")}</tbody></table></div>`}
+function inventoryTable(rows){if(!rows.length)return `<div class="empty">No hay productos registrados.</div>`;return `<div class="table-wrap"><table><thead><tr><th>Producto</th><th>SKU</th><th>Existencia</th><th>Mínimo</th><th>Precio venta</th></tr></thead><tbody>${rows.map(x=>`<tr><td><b>${esc(x.product_name)}</b><div class="muted">${esc(x.category||"")}</div></td><td>${esc(x.sku||"—")}</td><td><span class="pill" style="${x.quantity<=x.minimum_stock?'background:#fff0e7;color:#a65a25':''}">${x.quantity}</span></td><td>${x.minimum_stock}</td><td>${money(x.sale_price)}</td></tr>`).join("")}</tbody></table></div>`}
+function paymentTable(rows){if(!rows.length)return `<div class="empty">Todavía no hay pagos registrados.</div>`;return `<div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Orden</th><th>Método</th><th>Referencia</th><th>Monto</th></tr></thead><tbody>${rows.map(p=>`<tr><td>${new Date(p.paid_at).toLocaleDateString("es-SV")}</td><td>${esc(cache.repairs.find(r=>r.id===p.repair_id)?.model||"Reparación")}</td><td>${esc(p.payment_method)}</td><td>${esc(p.reference||"—")}</td><td><b>${money(p.amount)}</b></td></tr>`).join("")}</tbody></table></div>`}
+function technicianTable(rows){if(!rows.length)return `<div class="empty">No hay técnicos registrados.</div>`;return `<div class="table-wrap"><table><thead><tr><th>Nombre</th><th>Teléfono</th><th>Especialidad</th><th>Estado</th></tr></thead><tbody>${rows.map(t=>`<tr><td><b>${esc(t.full_name)}</b></td><td>${esc(t.phone||"—")}</td><td>${esc(t.specialty||"—")}</td><td>${t.active?"Activo":"Inactivo"}</td></tr>`).join("")}</tbody></table></div>`}
+function filterTable(id,q){const root=$(id);if(!root)return;const term=q.toLowerCase();root.querySelectorAll("tbody tr").forEach(tr=>tr.style.display=tr.innerText.toLowerCase().includes(term)?"":"none")}
+async function changeStatus(id,status){const {error}=await db.from("repair_orders").update({status}).eq("id",id);if(error){showError(error);return}toast("Estado actualizado");await loadData()}
+function openForm(type,repairId){let title="",fields="",table="",submit="Guardar";
+const clients=cache.clients.map(c=>`<option value="${c.id}">${esc(c.full_name)} — ${esc(c.phone)}</option>`).join("");
+const techs=cache.technicians.map(t=>`<option value="${t.id}">${esc(t.full_name)}</option>`).join("");
+if(type==="client"){title="Nuevo cliente";table="clients";fields=`<div class="form-grid"><div class="span2"><label>Nombre completo *</label><input name="full_name" required></div><div><label>Teléfono *</label><input name="phone" required></div><div><label>Correo</label><input name="email" type="email"></div><div class="span2"><label>Dirección</label><input name="address"></div><div class="span2"><label>Notas</label><textarea name="notes"></textarea></div></div>`}
+if(type==="technician"){title="Nuevo técnico";table="technicians";fields=`<label>Nombre completo *</label><input name="full_name" required><label>Teléfono</label><input name="phone"><label>Especialidad</label><input name="specialty" placeholder="Celulares, computadoras...">`}
+if(type==="inventory"){title="Agregar producto";table="inventory";fields=`<div class="form-grid"><div class="span2"><label>Nombre del producto *</label><input name="product_name" required></div><div><label>Código SKU</label><input name="sku"></div><div><label>Categoría</label><input name="category"></div><div><label>Cantidad</label><input name="quantity" type="number" min="0" value="0"></div><div><label>Stock mínimo</label><input name="minimum_stock" type="number" min="0" value="1"></div><div><label>Precio compra</label><input name="purchase_price" type="number" min="0" step=".01" value="0"></div><div><label>Precio venta</label><input name="sale_price" type="number" min="0" step=".01" value="0"></div></div>`}
+if(type==="repair"){title="Nueva orden de reparación";table="repair_orders";if(!cache.clients.length){toast("Primero registra un cliente");go("clients");return}fields=`<div class="form-grid"><div class="span2"><label>Cliente *</label><select name="client_id" required>${clients}</select></div><div><label>Tipo de equipo *</label><select name="device_type"><option>Celular</option><option>Tablet</option><option>Computadora</option><option>Laptop</option><option>Otro</option></select></div><div><label>Marca</label><input name="brand"></div><div><label>Modelo</label><input name="model"></div><div><label>Número de serie / IMEI</label><input name="serial_number"></div><div class="span2"><label>Problema reportado *</label><textarea name="problem_description" required></textarea></div><div class="span2"><label>Diagnóstico</label><textarea name="diagnosis"></textarea></div><div><label>Técnico</label><select name="technician_id"><option value="">Sin asignar</option>${techs}</select></div><div><label>Costo estimado ($)</label><input name="estimated_cost" type="number" min="0" step=".01" value="0"></div><div><label>Fecha prometida</label><input name="promised_at" type="date"></div></div>`}
+if(type==="payment"){title="Registrar pago";table="payments";const rid=repairId||cache.repairs[0]?.id;if(!rid){toast("Primero registra una reparación");go("repairs");return}fields=`<input type="hidden" name="repair_id" value="${rid}"><label>Orden de reparación</label><select name="repair_id">${cache.repairs.map(r=>`<option value="${r.id}" ${r.id===rid?"selected":""}>${esc(clientName(r.client_id))} — ${esc(r.brand||"Equipo")} ${esc(r.model||"")}</option>`).join("")}</select><label>Monto ($) *</label><input name="amount" type="number" min=".01" step=".01" required><label>Método de pago</label><select name="payment_method"><option value="cash">Efectivo</option><option value="transfer">Transferencia</option><option value="card">Tarjeta</option><option value="other">Otro</option></select><label>Referencia</label><input name="reference">`}
+$("modalRoot").innerHTML=`<div class="modal-back" onclick="if(event.target===this)closeModal()"><div class="modal"><div class="modal-head"><h3>${title}</h3><button class="btn ghost" onclick="closeModal()">✕</button></div><form id="dataForm">${fields}<button class="btn full" type="submit">${submit}</button></form></div></div>`;
+$("dataForm").onsubmit=async e=>{e.preventDefault();const fd=new FormData(e.target),obj=Object.fromEntries(fd.entries());if(type==="technician")obj.active=true;if(type==="inventory"||type==="repair"||type==="payment"){for(const k of ["quantity","minimum_stock","purchase_price","sale_price","estimated_cost","amount"])if(obj[k]!==undefined)obj[k]=Number(obj[k]);if(type==="repair"&&!obj.technician_id)delete obj.technician_id;if(type==="repair"&&!obj.promised_at)delete obj.promised_at}
+const {error}=await db.from(table).insert(obj);if(error){showError(error);return}closeModal();toast("Registro guardado correctamente");await loadData()};
+}
+function closeModal(){$("modalRoot").innerHTML=""}
+(async()=>{const {data:{session}}=await db.auth.getSession();currentUser=session?.user||null;renderAuth();if(currentUser)loadData()})();
+</script>
+</body>
+</html>
